@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Maximize, Minimize, AlertTriangle, Clock, ChevronRight, Lock, Unlock, CheckCircle, Headphones, Coffee, Brain } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { fetchProblemBySlug } from '../api';
+import { evaluateIntuition } from '../groq';
 import './GrindSession.css';
 
 const POMODORO_WORK = 50 * 60; 
@@ -14,8 +15,9 @@ const GrindSession = ({ session }) => {
   const navigate = useNavigate();
   const sessionLength = location.state?.length || 90;
   
-  // Hardcoded problem slug for now, later passed via location.state
-  const problemSlug = location.state?.problemSlug || 'two-sum';
+  const problemQueue = location.state?.problemQueue || [{ title_slug: 'two-sum' }];
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const problemSlug = problemQueue[currentIndex]?.title_slug;
 
   const [problem, setProblem] = useState(null);
   const [loadingProblem, setLoadingProblem] = useState(true);
@@ -25,23 +27,27 @@ const GrindSession = ({ session }) => {
   const [problemTimeElapsed, setProblemTimeElapsed] = useState(0);
   const [tabSwitches, setTabSwitches] = useState(0);
   
-  // Pomodoro State
   const [pomodoroTimeElapsed, setPomodoroTimeElapsed] = useState(0);
   const [isBreakTime, setIsBreakTime] = useState(false);
   const [breakTimeLeft, setBreakTimeLeft] = useState(POMODORO_BREAK);
 
-  // Audio State
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const audioRef = useRef(null);
   
-  // Modals state
-  const [step, setStep] = useState('commit'); // commit, solving, reflect
+  const [step, setStep] = useState('commit'); 
   const [commitText, setCommitText] = useState('');
   const [reflectionText, setReflectionText] = useState('');
+  
+  // Evaluation States
+  const [evaluating, setEvaluating] = useState(false);
+  const [commitFeedback, setCommitFeedback] = useState(null);
+  const [reflectionFeedback, setReflectionFeedback] = useState(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const loadProblem = async () => {
+      if (!problemSlug) return;
+      setLoadingProblem(true);
       try {
         const data = await fetchProblemBySlug(problemSlug);
         setProblem(data);
@@ -128,13 +134,12 @@ const GrindSession = ({ session }) => {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
-  // Dynamically map API hints to unlocked times (e.g. 10m, 20m, 30m)
   const getActiveHints = () => {
     if (!problem || !problem.hints) return [];
     const minutesElapsed = Math.floor(problemTimeElapsed / 60);
     
     let allHints = problem.hints.map((text, i) => {
-      const unlockTime = (i + 1) * 10; // Hint 1 at 10m, Hint 2 at 20m
+      const unlockTime = (i + 1) * 10; 
       return { time: unlockTime, text, unlocked: minutesElapsed >= unlockTime, type: 'Hint' };
     });
 
@@ -151,17 +156,52 @@ const GrindSession = ({ session }) => {
     return allHints;
   };
 
+  const handleCommitSubmit = async () => {
+    setEvaluating(true);
+    setCommitFeedback(null);
+    
+    const result = await evaluateIntuition(problem.title, problem.content, commitText, true);
+    setEvaluating(false);
+
+    if (result.status === 'error') {
+      alert(result.message);
+      return;
+    }
+
+    if (result.is_correct) {
+      setStep('solving');
+    } else {
+      setCommitFeedback(result.feedback);
+    }
+  };
+
   const submitProblem = () => setStep('reflect');
   
-  const completeReflection = async () => {
+  const handleReflectionSubmit = async () => {
+    setEvaluating(true);
+    setReflectionFeedback(null);
+    
+    const result = await evaluateIntuition(problem.title, problem.content, reflectionText, false);
+    
+    if (result.status === 'error') {
+      setEvaluating(false);
+      alert(result.message);
+      return;
+    }
+
+    if (!result.is_correct) {
+      setEvaluating(false);
+      setReflectionFeedback(result.feedback);
+      return;
+    }
+
+    // If correct, proceed to save
     setSaving(true);
     const userId = session?.user?.id;
     
     if (userId) {
-      // Calculate unlocked hints
       const usedHints = getActiveHints().filter(h => h.unlocked).length;
       
-      // Save to Problem History
       await supabase.from('problem_history').insert([
         {
           user_id: userId,
@@ -172,7 +212,6 @@ const GrindSession = ({ session }) => {
         }
       ]);
 
-      // Add to Spaced Repetition (Upsert logic to simplify)
       const { data: existingSr } = await supabase
         .from('spaced_repetition')
         .select('*')
@@ -181,7 +220,6 @@ const GrindSession = ({ session }) => {
         .single();
       
       if (existingSr) {
-        // Increase interval slightly
         const newInterval = existingSr.interval * 2;
         const nextDate = new Date();
         nextDate.setDate(nextDate.getDate() + newInterval);
@@ -192,7 +230,7 @@ const GrindSession = ({ session }) => {
         }).eq('id', existingSr.id);
       } else {
         const nextDate = new Date();
-        nextDate.setDate(nextDate.getDate() + 1); // Review tomorrow initially
+        nextDate.setDate(nextDate.getDate() + 1); 
         
         await supabase.from('spaced_repetition').insert([{
           user_id: userId,
@@ -204,8 +242,23 @@ const GrindSession = ({ session }) => {
     }
 
     setSaving(false);
-    alert("Saved to Database!");
-    navigate('/');
+    setEvaluating(false);
+    
+    if (currentIndex + 1 < problemQueue.length) {
+      setLoadingProblem(true); // Fix: Immediately show loading state
+      setCurrentIndex(prev => prev + 1);
+      setStep('commit');
+      setCommitText('');
+      setReflectionText('');
+      setCommitFeedback(null);
+      setReflectionFeedback(null);
+      setProblemTimeElapsed(0);
+      setProblem(null);
+      window.scrollTo(0, 0); 
+    } else {
+      alert("Session complete! You crushed all the queued problems!");
+      navigate('/');
+    }
   };
   
   const forceBreak = () => {
@@ -213,11 +266,12 @@ const GrindSession = ({ session }) => {
     setIsBreakTime(true);
   };
 
-  if (loadingProblem) {
+  // Fix: Check !problem to prevent crashes when transitioning between problems
+  if (loadingProblem || !problem) {
     return <div className="grind-container flex items-center justify-center">Loading LeetCode Problem...</div>;
   }
 
-  const timeLimit = 30; // Mock time limit in minutes
+  const timeLimit = 30; 
 
   return (
     <div className={`grind-container ${isFullscreen ? 'is-fullscreen' : ''}`}>
@@ -263,18 +317,16 @@ const GrindSession = ({ session }) => {
         </div>
       </header>
 
-      {/* Main Focus Reading View */}
       <div className="focus-workspace flex-col items-center">
         <div className="focus-content-wrapper">
           
           <div className="problem-card glass-panel">
             <div className="problem-header flex justify-between items-center">
               <h2>{problem.title}</h2>
-              <span className={`difficulty-badge ${problem.difficulty.toLowerCase()}`}>
+              <span className={`difficulty-badge ${problem.difficulty?.toLowerCase()}`}>
                 {problem.difficulty}
               </span>
             </div>
-            {/* Topic Tags */}
             <div className="flex gap-2" style={{marginBottom: '16px', flexWrap: 'wrap'}}>
               {problem.topicTags?.map((tag, i) => (
                 <span key={i} style={{background: 'var(--bg-tertiary)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem'}}>
@@ -293,24 +345,34 @@ const GrindSession = ({ session }) => {
             >
               <div className="flex items-center gap-2 text-accent-primary" style={{marginBottom: '16px'}}>
                 <Brain size={20} />
-                <h3 style={{margin: 0}}>Commit Before Code</h3>
+                <h3 style={{margin: 0}}>Commit Before Code (AI Evaluated)</h3>
               </div>
               <p className="text-secondary" style={{marginBottom: '16px'}}>
-                Write your approach and time/space complexity before you start coding in your IDE.
+                Write your approach and time/space complexity. Groq will evaluate your intuition before unlocking the hints.
               </p>
+              
               <textarea 
                 className="commit-textarea"
                 placeholder="e.g. Approach: Use a hash map to store complements. Time: O(N), Space: O(N)"
                 value={commitText}
                 onChange={e => setCommitText(e.target.value)}
                 rows={3}
+                disabled={evaluating}
+                style={{ borderColor: commitFeedback ? 'var(--error)' : '' }}
               />
+
+              {commitFeedback && (
+                <div className="text-error" style={{marginBottom: '16px', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px'}}>
+                  <strong>AI Feedback:</strong> {commitFeedback}
+                </div>
+              )}
+
               <button 
                 className="btn btn-primary w-full"
-                disabled={commitText.length < 10}
-                onClick={() => setStep('solving')}
+                disabled={commitText.length < 10 || evaluating}
+                onClick={handleCommitSubmit}
               >
-                Lock Commit & Start Solving
+                {evaluating ? 'Evaluating Intuition...' : 'Evaluate & Start Solving'}
               </button>
             </motion.div>
           )}
@@ -388,7 +450,7 @@ const GrindSession = ({ session }) => {
                 <Brain size={24} />
                 <h2 style={{margin: 0}} className="text-success">Problem Solved!</h2>
               </div>
-              <p>Forced Reflection: What was the key insight or pattern?</p>
+              <p>Forced Reflection: What was the key insight or pattern? Groq will verify your understanding before saving.</p>
               
               <textarea 
                 className="commit-textarea"
@@ -396,15 +458,23 @@ const GrindSession = ({ session }) => {
                 value={reflectionText}
                 onChange={e => setReflectionText(e.target.value)}
                 rows={4}
+                disabled={evaluating || saving}
+                style={{ borderColor: reflectionFeedback ? 'var(--error)' : '' }}
               />
+
+              {reflectionFeedback && (
+                <div className="text-error" style={{marginBottom: '16px', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px'}}>
+                  <strong>AI Feedback:</strong> {reflectionFeedback}
+                </div>
+              )}
               
               <button 
                 className="btn btn-primary w-full mt-4"
-                disabled={reflectionText.length < 5 || saving}
-                onClick={completeReflection}
+                disabled={reflectionText.length < 5 || evaluating || saving}
+                onClick={handleReflectionSubmit}
               >
-                {saving ? 'Saving to Database...' : 'Save to Spaced Repetition Queue '}
-                {!saving && <ChevronRight size={16} />}
+                {evaluating ? 'AI Verifying Insight...' : saving ? 'Saving to Database...' : 'Verify & Save to Spaced Repetition '}
+                {(!saving && !evaluating) && <ChevronRight size={16} />}
               </button>
             </motion.div>
           </motion.div>

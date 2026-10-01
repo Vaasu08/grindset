@@ -101,6 +101,29 @@
   color: var(--text-secondary);
 }
 
+.topic-select {
+  width: 100%;
+  padding: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.topic-select:focus {
+  border-color: var(--accent-primary);
+}
+
+.topic-select option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
 .launch-btn {
   width: 100%;
   padding: 16px;
