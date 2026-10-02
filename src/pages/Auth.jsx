@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { Flame } from 'lucide-react';
+import { motion } from 'framer-motion';
 import './Auth.css';
 
 const Auth = () => {
@@ -47,10 +48,13 @@ const Auth = () => {
   };
 
   return (
-    <div className="auth-container flex-col items-center justify-center">
+    <motion.div 
+      className="auth-container flex-col items-center justify-center"
+      initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}
+    >
       <div className="auth-card glass-panel flex-col items-center">
-        <div className="logo flex items-center gap-2" style={{marginBottom: '24px'}}>
-          <Flame size={40} color="var(--accent-primary)" />
+        <div className="logo flex flex-col items-center gap-2" style={{marginBottom: '24px'}}>
+          <img src="/logo.png" alt="Grindset Logo" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
           <h1 className="text-gradient">GRINDSET</h1>
         </div>
         
@@ -106,7 +110,7 @@ const Auth = () => {
           {isSignUp ? "Already have an account? Log in" : "Need an account? Sign up"}
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Large binaries
+yt-dlp.exe
+public/audio/brown_noise.m4a
+public/audio/brown_noise.webm

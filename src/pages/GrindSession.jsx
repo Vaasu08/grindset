@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Maximize, Minimize, AlertTriangle, Clock, ChevronRight, Lock, Unlock, CheckCircle, Headphones, Coffee, Brain } from 'lucide-react';
+import { Maximize, Minimize, AlertTriangle, Clock, ChevronRight, Lock, Unlock, CheckCircle, Headphones, Coffee, Brain, Music, Flame, CloudRain, Waves } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { fetchProblemBySlug } from '../api';
 import { evaluateIntuition } from '../groq';
@@ -9,6 +9,14 @@ import './GrindSession.css';
 
 const POMODORO_WORK = 50 * 60; 
 const POMODORO_BREAK = 10 * 60; 
+
+const AUDIO_TRACKS = [
+  { name: 'Young Girl A (Siinamota)', icon: 'flame', url: '/audio/young_girl_a.mp3' },
+  { name: 'Lofi Hip Hop Radio', icon: 'music', url: '/audio/lofi.mp3' },
+  { name: 'Heavy Rain & Thunder', icon: 'cloud-rain', url: '/audio/rain.mp3' },
+  { name: 'Cafe Ambience', icon: 'coffee', url: '/audio/cafe.mp3' },
+  { name: 'Deep Brown Noise', icon: 'waves', url: '/audio/brown_noise.webm' }
+];
 
 const GrindSession = ({ session }) => {
   const location = useLocation();
@@ -31,7 +39,11 @@ const GrindSession = ({ session }) => {
   const [isBreakTime, setIsBreakTime] = useState(false);
   const [breakTimeLeft, setBreakTimeLeft] = useState(POMODORO_BREAK);
 
+  // Lo-Fi Player State
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [volume, setVolume] = useState(0.5);
+  const [showAudioMenu, setShowAudioMenu] = useState(false);
   const audioRef = useRef(null);
   
   const [step, setStep] = useState('commit'); 
@@ -43,6 +55,10 @@ const GrindSession = ({ session }) => {
   const [commitFeedback, setCommitFeedback] = useState(null);
   const [reflectionFeedback, setReflectionFeedback] = useState(null);
   const [saving, setSaving] = useState(false);
+  
+  const [completedProblems, setCompletedProblems] = useState([]);
+  const [showAbortPrompt, setShowAbortPrompt] = useState(false);
+  const [showSkipPrompt, setShowSkipPrompt] = useState(false);
 
   useEffect(() => {
     const loadProblem = async () => {
@@ -60,21 +76,31 @@ const GrindSession = ({ session }) => {
     loadProblem();
   }, [problemSlug]);
 
+  // Native Audio Playback Control
   useEffect(() => {
-    audioRef.current = new Audio('https://actions.google.com/sounds/v1/weather/rain_on_roof.ogg');
-    audioRef.current.loop = true;
-    audioRef.current.volume = 0.5;
-    return () => { if (audioRef.current) audioRef.current.pause(); };
-  }, []);
-
-  const toggleAudio = () => {
-    if (isAudioPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
+    if (audioRef.current) {
+      if (isAudioPlaying) {
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(e => {
+            console.error("Audio playback blocked:", e);
+            if (e.name !== 'AbortError') {
+              setIsAudioPlaying(false);
+            }
+          });
+        }
+      } else {
+        audioRef.current.pause();
+      }
     }
-    setIsAudioPlaying(!isAudioPlaying);
-  };
+  }, [isAudioPlaying, currentTrackIndex]);
+
+  // Volume Control
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
 
   useEffect(() => {
     const handleFullscreenChange = () => setIsFullscreen(document.fullscreenElement != null);
@@ -220,7 +246,11 @@ const GrindSession = ({ session }) => {
         .single();
       
       if (existingSr) {
-        const newInterval = existingSr.interval * 2;
+        // If they used hints or took more than 20 mins, reset interval to 1 day.
+        // Otherwise, double the interval.
+        const struggled = usedHints > 0 || problemTimeElapsed > 1200;
+        const newInterval = struggled ? 1 : existingSr.interval * 2;
+        
         const nextDate = new Date();
         nextDate.setDate(nextDate.getDate() + newInterval);
         
@@ -244,8 +274,8 @@ const GrindSession = ({ session }) => {
     setSaving(false);
     setEvaluating(false);
     
-    if (currentIndex + 1 < problemQueue.length) {
-      setLoadingProblem(true); // Fix: Immediately show loading state
+      if (currentIndex + 1 < problemQueue.length && sessionTimeLeft > 0) {
+      setLoadingProblem(true);
       setCurrentIndex(prev => prev + 1);
       setStep('commit');
       setCommitText('');
@@ -256,25 +286,66 @@ const GrindSession = ({ session }) => {
       setProblem(null);
       window.scrollTo(0, 0); 
     } else {
-      alert("Session complete! You crushed all the queued problems!");
-      navigate('/');
+      navigate('/summary', { state: { completedProblems, sessionLength } });
     }
   };
   
+  const handleSkip = () => {
+    setShowSkipPrompt(true);
+  };
+
+  const executeSkip = () => {
+    setShowSkipPrompt(false);
+    if (currentIndex + 1 < problemQueue.length && sessionTimeLeft > 0) {
+      setLoadingProblem(true);
+      setCurrentIndex(prev => prev + 1);
+      setStep('commit');
+      setCommitText('');
+      setReflectionText('');
+      setCommitFeedback(null);
+      setReflectionFeedback(null);
+      setProblemTimeElapsed(0);
+      setProblem(null);
+      window.scrollTo(0, 0); 
+    } else {
+      navigate('/summary', { state: { completedProblems, sessionLength } });
+    }
+  };
+
   const forceBreak = () => {
     setPomodoroTimeElapsed(POMODORO_WORK);
     setIsBreakTime(true);
   };
 
+  const handleAbort = () => {
+    setShowAbortPrompt(true);
+  };
+
+  const executeAbort = () => {
+    setShowAbortPrompt(false);
+    navigate('/summary', { state: { completedProblems, sessionLength } });
+  };
+
   // Fix: Check !problem to prevent crashes when transitioning between problems
   if (loadingProblem || !problem) {
-    return <div className="grind-container flex items-center justify-center">Loading LeetCode Problem...</div>;
+    return (
+      <motion.div 
+        className="grind-container flex items-center justify-center"
+        initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}
+      >
+        Loading LeetCode Problem...
+      </motion.div>
+    );
   }
 
   const timeLimit = 30; 
 
   return (
-    <div className={`grind-container ${isFullscreen ? 'is-fullscreen' : ''}`}>
+    <motion.div 
+      className={`grind-container ${isFullscreen ? 'is-fullscreen' : ''}`}
+      initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}
+    >
+      <audio ref={audioRef} src={AUDIO_TRACKS[currentTrackIndex].url} loop />
       
       <header className="grind-header flex justify-between items-center">
         <div className="flex items-center gap-4">
@@ -297,13 +368,94 @@ const GrindSession = ({ session }) => {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="btn btn-outline" style={{padding: '4px 8px', fontSize: '12px'}} onClick={forceBreak}>
-            Force Break (Debug)
+          <button className="btn btn-outline text-error" style={{padding: '4px 8px', fontSize: '12px', borderColor: 'var(--error)'}} onClick={handleAbort}>
+            Abort Session
           </button>
 
-          <button className={`btn-icon ${isAudioPlaying ? 'text-success' : ''}`} onClick={toggleAudio} title="Toggle Ambient Audio">
-            {isAudioPlaying ? <Headphones size={20} /> : <Headphones size={20} style={{opacity: 0.5}} />}
-          </button>
+          <div style={{ position: 'relative' }}>
+            <button className={`btn-icon ${isAudioPlaying ? 'text-success' : ''}`} onClick={() => setShowAudioMenu(!showAudioMenu)} title="Ambient Audio Settings">
+              {isAudioPlaying ? <Headphones size={20} /> : <Headphones size={20} style={{opacity: 0.5}} />}
+            </button>
+
+            <AnimatePresence>
+              {showAudioMenu && (
+                <motion.div 
+                  className="audio-menu glass-panel"
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
+                    marginTop: '10px',
+                    width: '250px',
+                    padding: '16px',
+                    zIndex: 100
+                  }}
+                >
+                  <div className="flex justify-between items-center" style={{marginBottom: '12px'}}>
+                    <h4 style={{margin: 0}}>Focus Audio</h4>
+                    <button 
+                      className="btn btn-outline" 
+                      style={{padding: '4px 8px', fontSize: '0.8rem'}}
+                      onClick={() => setIsAudioPlaying(!isAudioPlaying)}
+                    >
+                      {isAudioPlaying ? 'Pause' : 'Play'}
+                    </button>
+                  </div>
+                  
+                  <div style={{marginBottom: '16px'}}>
+                    <div className="flex justify-between text-muted" style={{fontSize: '0.8rem', marginBottom: '4px'}}>
+                      <span>Volume</span>
+                      <span>{Math.round(volume * 100)}%</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="0" max="1" step="0.05" 
+                      value={volume} 
+                      onChange={(e) => setVolume(parseFloat(e.target.value))} 
+                      style={{width: '100%', cursor: 'pointer'}}
+                    />
+                  </div>
+
+                  <div className="flex-col gap-2">
+                    {AUDIO_TRACKS.map((track, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setCurrentTrackIndex(idx);
+                          if (!isAudioPlaying) setIsAudioPlaying(true);
+                        }}
+                        style={{
+                          textAlign: 'left',
+                          padding: '8px 12px',
+                          borderRadius: '4px',
+                          background: currentTrackIndex === idx ? 'var(--bg-secondary)' : 'transparent',
+                          color: currentTrackIndex === idx ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                          border: currentTrackIndex === idx ? '1px solid var(--border-subtle)' : '1px solid transparent',
+                          cursor: 'pointer',
+                          fontSize: '0.9rem',
+                          transition: 'all 0.2s',
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}
+                      >
+                        {track.icon === 'flame' && <Flame size={14} />}
+                        {track.icon === 'music' && <Music size={14} />}
+                        {track.icon === 'cloud-rain' && <CloudRain size={14} />}
+                        {track.icon === 'coffee' && <Coffee size={14} />}
+                        {track.icon === 'waves' && <Waves size={14} />}
+                        {track.name}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {tabSwitches > 0 && (
             <div className="warning-badge flex items-center gap-2 text-warning" title="You switched tabs or lost focus!">
@@ -374,6 +526,15 @@ const GrindSession = ({ session }) => {
               >
                 {evaluating ? 'Evaluating Intuition...' : 'Evaluate & Start Solving'}
               </button>
+              
+              <button 
+                className="btn btn-outline w-full mt-4"
+                style={{borderColor: 'transparent', color: 'var(--text-muted)'}}
+                onClick={handleSkip}
+                disabled={evaluating}
+              >
+                Skip Problem
+              </button>
             </motion.div>
           )}
 
@@ -407,9 +568,16 @@ const GrindSession = ({ session }) => {
                 {getActiveHints().length === 0 && <div className="text-muted">No hints available for this problem.</div>}
               </div>
 
-              <div className="completion-action mt-8 flex justify-center">
+              <div className="completion-action mt-8 flex-col items-center gap-4">
                 <button className="btn btn-primary" style={{padding: '16px 32px', fontSize: '1.2rem'}} onClick={submitProblem}>
                   <CheckCircle size={20} /> I've Solved It
+                </button>
+                <button 
+                  className="btn btn-outline"
+                  style={{borderColor: 'transparent', color: 'var(--text-muted)', fontSize: '0.9rem'}}
+                  onClick={handleSkip}
+                >
+                  Skip this problem
                 </button>
               </div>
             </motion.div>
@@ -480,7 +648,63 @@ const GrindSession = ({ session }) => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+
+      {showAbortPrompt && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          zIndex: 1000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(5px)'
+        }}>
+          <div className="glass-panel text-center animate-slide-up" style={{ maxWidth: '450px', padding: '40px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)', marginBottom: '24px' }}>
+              <AlertTriangle size={32} />
+            </div>
+            <h3 className="text-3xl font-bold text-white mb-4">Abort Session?</h3>
+            <p className="text-gray-400 mb-8" style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
+              Are you sure you want to tap out early? Your progress for completed problems will be saved.
+            </p>
+            <div className="flex gap-4 justify-center">
+              <button className="btn btn-outline" style={{ padding: '12px 24px', fontSize: '1rem', flex: 1 }} onClick={() => setShowAbortPrompt(false)}>
+                Keep Grinding
+              </button>
+              <button className="btn btn-primary" style={{ padding: '12px 24px', fontSize: '1rem', flex: 1, backgroundColor: 'var(--error)', borderColor: 'var(--error)', color: '#fff', boxShadow: '0 0 20px rgba(239, 68, 68, 0.4)' }} onClick={executeAbort}>
+                Yes, Abort
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSkipPrompt && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          zIndex: 1000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(5px)'
+        }}>
+          <div className="glass-panel text-center animate-slide-up" style={{ maxWidth: '450px', padding: '40px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(234, 179, 8, 0.1)', color: 'var(--accent-secondary)', marginBottom: '24px' }}>
+              <AlertTriangle size={32} />
+            </div>
+            <h3 className="text-3xl font-bold text-white mb-4">Skip Problem?</h3>
+            <p className="text-gray-400 mb-8" style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
+              Are you sure you want to skip this problem? No progress or XP will be saved for it.
+            </p>
+            <div className="flex gap-4 justify-center">
+              <button className="btn btn-outline" style={{ padding: '12px 24px', fontSize: '1rem', flex: 1 }} onClick={() => setShowSkipPrompt(false)}>
+                Go Back
+              </button>
+              <button className="btn btn-primary" style={{ padding: '12px 24px', fontSize: '1rem', flex: 1, backgroundColor: 'var(--accent-secondary)', borderColor: 'var(--accent-secondary)', color: '#000', boxShadow: '0 0 20px rgba(234, 179, 8, 0.4)' }} onClick={executeSkip}>
+                Yes, Skip it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </motion.div>
   );
 };
 
