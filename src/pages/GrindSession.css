@@ -191,3 +191,8 @@
 .text-secondary { color: var(--text-secondary) !important; }
 .text-muted { color: var(--text-muted) !important; }
 .text-accent-primary { color: var(--accent-primary) !important; }
+
+/* UI Polish Rules */
+.session-timer, .pomodoro-timer, .problem-timer, .break-timer {
+  font-variant-numeric: tabular-nums;
+}

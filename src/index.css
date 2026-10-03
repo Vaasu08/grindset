@@ -112,7 +112,7 @@ button {
   transform: translateY(-1px);
 }
 .btn-primary:active {
-  transform: translateY(1px);
+  transform: translateY(1px) scale(0.96);
 }
 
 .btn-outline {
@@ -123,6 +123,9 @@ button {
 .btn-outline:hover {
   border-color: var(--border-strong);
   background: var(--bg-secondary);
+}
+.btn-outline:active {
+  transform: scale(0.96);
 }
 
 .btn-icon {
@@ -138,6 +141,9 @@ button {
 .btn-icon:hover {
   background: var(--bg-secondary);
   color: var(--text-primary);
+}
+.btn-icon:active {
+  transform: scale(0.96);
 }
 
 /* Form elements */

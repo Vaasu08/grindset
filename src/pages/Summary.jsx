@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Target, Activity, Flame, CheckCircle, Clock, Award } from 'lucide-react';
+import { Target, Activity, Flame, CheckCircle, Clock, Award } from '../Icons';
 import './Summary.css';
 
 const Summary = () => {
@@ -36,7 +36,7 @@ const Summary = () => {
     >
       <motion.div className="summary-header" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-gradient">Grind Complete</h1>
-        <p>Session terminated. Data secured.</p>
+        <p>Session done. Here's the breakdown.</p>
       </motion.div>
 
       <motion.div 
@@ -46,12 +46,12 @@ const Summary = () => {
         animate="visible"
       >
         <motion.div className="summary-stat-card" variants={itemVariants}>
-          <div className="stat-label flex items-center justify-center gap-2"><Target size={16} /> Problems Crushed</div>
+          <div className="stat-label flex items-center justify-center gap-2"><Target size={16} /> Problems Solved</div>
           <div className="stat-value-large">{completedProblems.length}</div>
         </motion.div>
         
         <motion.div className="summary-stat-card" variants={itemVariants}>
-          <div className="stat-label flex items-center justify-center gap-2"><Clock size={16} /> Deep Work Time</div>
+          <div className="stat-label flex items-center justify-center gap-2"><Clock size={16} /> Time Spent</div>
           <div className="stat-value-large" style={{ color: 'var(--accent-secondary)' }}>{formatTime(totalTimeSpent)}</div>
         </motion.div>
 
@@ -68,7 +68,7 @@ const Summary = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <h2><Activity size={24} style={{ color: 'var(--accent-primary)' }}/> Combat Log</h2>
+          <h2><Activity size={24} style={{ color: 'var(--accent-primary)' }}/> Session Log</h2>
           
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {completedProblems.map((p, idx) => (
@@ -84,9 +84,9 @@ const Summary = () => {
                     <span className="metric-value">{formatTime(p.time)}</span>
                   </div>
                   <div className="combat-metric">
-                    <span className="metric-label">Hints Required</span>
+                    <span className="metric-label">Hints Used</span>
                     <span className={`metric-value ${p.hints === 0 ? 'flawless' : 'warn'}`}>
-                      {p.hints === 0 ? '0 (Flawless)' : p.hints}
+                      {p.hints === 0 ? 'None' : p.hints}
                     </span>
                   </div>
                 </div>

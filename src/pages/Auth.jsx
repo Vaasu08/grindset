@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { Flame } from 'lucide-react';
+import { Flame } from '../Icons';
 import { motion } from 'framer-motion';
 import './Auth.css';
 
@@ -58,7 +58,7 @@ const Auth = () => {
           <h1 className="text-gradient">GRINDSET</h1>
         </div>
         
-        <h2 style={{marginBottom: '24px'}}>{isSignUp ? 'Create Account' : 'Initialize Session'}</h2>
+        <h2 style={{marginBottom: '24px'}}>{isSignUp ? 'Create Account' : 'Log In'}</h2>
         
         {message && <div className="auth-message text-warning">{message}</div>}
 

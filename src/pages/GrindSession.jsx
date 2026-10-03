@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Maximize, Minimize, AlertTriangle, Clock, ChevronRight, Lock, Unlock, CheckCircle, Headphones, Coffee, Brain, Music, Flame, CloudRain, Waves } from 'lucide-react';
+import { Maximize, Minimize, AlertTriangle, Clock, ChevronRight, Lock, Unlock, CheckCircle, Headphones, Coffee, Brain, Music, Flame, CloudRain, Waves, ExternalLink } from '../Icons';
 import { supabase } from '../supabaseClient';
 import { fetchProblemBySlug } from '../api';
 import { evaluateIntuition } from '../groq';
@@ -29,6 +29,16 @@ const GrindSession = ({ session }) => {
 
   const [problem, setProblem] = useState(null);
   const [loadingProblem, setLoadingProblem] = useState(true);
+  const [problemTimeLimit, setProblemTimeLimit] = useState(25);
+
+  useEffect(() => {
+    if (problem) {
+      const diff = problem.difficulty?.toLowerCase();
+      if (diff === 'easy') setProblemTimeLimit(15);
+      else if (diff === 'hard') setProblemTimeLimit(45);
+      else setProblemTimeLimit(25);
+    }
+  }, [problem]);
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [sessionTimeLeft, setSessionTimeLeft] = useState(sessionLength * 60);
@@ -333,12 +343,12 @@ const GrindSession = ({ session }) => {
         className="grind-container flex items-center justify-center"
         initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}
       >
-        Loading LeetCode Problem...
+        Loading problem...
       </motion.div>
     );
   }
 
-  const timeLimit = 30; 
+  // Dynamic problemTimeLimit used instead of hardcoded 30
 
   return (
     <motion.div 
@@ -362,8 +372,28 @@ const GrindSession = ({ session }) => {
             <Coffee size={16} /> Pomo: {formatTime(POMODORO_WORK - pomodoroTimeElapsed)}
           </div>
 
-          <div className={`problem-timer flex items-center gap-2 ${(problemTimeElapsed / 60) > timeLimit ? 'text-error animate-pulse' : ''}`}>
-            Problem Elapsed: {formatTime(problemTimeElapsed)}
+          <div className={`problem-timer flex items-center gap-2 ${(problemTimeElapsed / 60) > problemTimeLimit ? 'text-error animate-pulse' : ''}`} title="FAANG Recommended Time">
+            Problem: {formatTime(problemTimeElapsed)} / 
+            <select 
+              value={problemTimeLimit}
+              onChange={(e) => setProblemTimeLimit(Number(e.target.value))}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'inherit',
+                fontFamily: 'var(--font-mono)',
+                outline: 'none',
+                cursor: 'pointer',
+                appearance: 'none',
+                padding: '0 4px',
+                fontWeight: 'bold'
+              }}
+            >
+              <option value={15} style={{background: 'var(--bg-secondary)', color: 'white'}}>15:00 (Easy)</option>
+              <option value={25} style={{background: 'var(--bg-secondary)', color: 'white'}}>25:00 (Medium)</option>
+              <option value={45} style={{background: 'var(--bg-secondary)', color: 'white'}}>45:00 (Hard)</option>
+              <option value={60} style={{background: 'var(--bg-secondary)', color: 'white'}}>60:00 (Max)</option>
+            </select>
           </div>
         </div>
 
@@ -474,7 +504,18 @@ const GrindSession = ({ session }) => {
           
           <div className="problem-card glass-panel">
             <div className="problem-header flex justify-between items-center">
-              <h2>{problem.title}</h2>
+              <div className="flex items-center gap-4">
+                <h2 style={{margin: 0}}>{problem.title}</h2>
+                <a 
+                  href={`https://leetcode.com/problems/${problemSlug}/`} 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="btn btn-outline flex items-center gap-2"
+                  style={{ padding: '4px 10px', fontSize: '0.85rem', borderColor: 'var(--border-subtle)', borderRadius: 'var(--radius-full)' }}
+                >
+                  <ExternalLink size={14} /> Solve on LeetCode
+                </a>
+              </div>
               <span className={`difficulty-badge ${problem.difficulty?.toLowerCase()}`}>
                 {problem.difficulty}
               </span>
@@ -497,10 +538,10 @@ const GrindSession = ({ session }) => {
             >
               <div className="flex items-center gap-2 text-accent-primary" style={{marginBottom: '16px'}}>
                 <Brain size={20} />
-                <h3 style={{margin: 0}}>Commit Before Code (AI Evaluated)</h3>
+                <h3 style={{margin: 0}}>Write Your Approach First</h3>
               </div>
               <p className="text-secondary" style={{marginBottom: '16px'}}>
-                Write your approach and time/space complexity. Groq will evaluate your intuition before unlocking the hints.
+                Describe your approach and expected time/space complexity. Get it right to unlock the problem.
               </p>
               
               <textarea 
@@ -515,7 +556,7 @@ const GrindSession = ({ session }) => {
 
               {commitFeedback && (
                 <div className="text-error" style={{marginBottom: '16px', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px'}}>
-                  <strong>AI Feedback:</strong> {commitFeedback}
+                  <strong>Feedback:</strong> {commitFeedback}
                 </div>
               )}
 
@@ -524,7 +565,7 @@ const GrindSession = ({ session }) => {
                 disabled={commitText.length < 10 || evaluating}
                 onClick={handleCommitSubmit}
               >
-                {evaluating ? 'Evaluating Intuition...' : 'Evaluate & Start Solving'}
+                {evaluating ? 'Checking...' : 'Submit & Start Solving'}
               </button>
               
               <button 
@@ -545,8 +586,8 @@ const GrindSession = ({ session }) => {
               animate={{ opacity: 1 }}
             >
               <div className="flex justify-between items-center" style={{marginBottom: '20px'}}>
-                <h3>Stuck Protocol</h3>
-                <span className="text-secondary" style={{fontSize: '0.9rem'}}>Hints unlock automatically based on time spent.</span>
+                <h3>Hints</h3>
+                <span className="text-secondary" style={{fontSize: '0.9rem'}}>Unlock over time. Try without them first.</span>
               </div>
               
               <div className="hints-list flex-col gap-4">
@@ -596,7 +637,7 @@ const GrindSession = ({ session }) => {
               <Coffee size={64} className="text-warning animate-pulse-glow" />
               <h1 className="text-gradient" style={{fontSize: '3rem'}}>FORCED BREAK</h1>
               <p style={{fontSize: '1.2rem', textAlign: 'center', maxWidth: '400px'}}>
-                You've been in deep work for 50 minutes. Walk away, stretch, and reset your mind to prevent burnout.
+                50 minutes of deep work done. Get up, stretch, look away from the screen.
               </p>
               <div className="break-timer" style={{fontSize: '4rem', fontFamily: 'var(--font-mono)'}}>
                 {formatTime(breakTimeLeft)}
@@ -618,7 +659,7 @@ const GrindSession = ({ session }) => {
                 <Brain size={24} />
                 <h2 style={{margin: 0}} className="text-success">Problem Solved!</h2>
               </div>
-              <p>Forced Reflection: What was the key insight or pattern? Groq will verify your understanding before saving.</p>
+              <p>What was the key insight or pattern? Explain it so the solve counts.</p>
               
               <textarea 
                 className="commit-textarea"
@@ -632,7 +673,7 @@ const GrindSession = ({ session }) => {
 
               {reflectionFeedback && (
                 <div className="text-error" style={{marginBottom: '16px', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px'}}>
-                  <strong>AI Feedback:</strong> {reflectionFeedback}
+                  <strong>Feedback:</strong> {reflectionFeedback}
                 </div>
               )}
               
@@ -641,7 +682,7 @@ const GrindSession = ({ session }) => {
                 disabled={reflectionText.length < 5 || evaluating || saving}
                 onClick={handleReflectionSubmit}
               >
-                {evaluating ? 'AI Verifying Insight...' : saving ? 'Saving to Database...' : 'Verify & Save to Spaced Repetition '}
+                {evaluating ? 'Verifying...' : saving ? 'Saving...' : 'Confirm & Next Problem '}
                 {(!saving && !evaluating) && <ChevronRight size={16} />}
               </button>
             </motion.div>
@@ -663,7 +704,7 @@ const GrindSession = ({ session }) => {
             </div>
             <h3 className="text-3xl font-bold text-white mb-4">Abort Session?</h3>
             <p className="text-gray-400 mb-8" style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
-              Are you sure you want to tap out early? Your progress for completed problems will be saved.
+              Progress on completed problems is saved. This ends the session.
             </p>
             <div className="flex gap-4 justify-center">
               <button className="btn btn-outline" style={{ padding: '12px 24px', fontSize: '1rem', flex: 1 }} onClick={() => setShowAbortPrompt(false)}>
@@ -691,7 +732,7 @@ const GrindSession = ({ session }) => {
             </div>
             <h3 className="text-3xl font-bold text-white mb-4">Skip Problem?</h3>
             <p className="text-gray-400 mb-8" style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
-              Are you sure you want to skip this problem? No progress or XP will be saved for it.
+              Nothing gets saved for skipped problems.
             </p>
             <div className="flex gap-4 justify-center">
               <button className="btn btn-outline" style={{ padding: '12px 24px', fontSize: '1rem', flex: 1 }} onClick={() => setShowSkipPrompt(false)}>
