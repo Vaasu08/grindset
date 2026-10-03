@@ -12,10 +12,32 @@
 }
 
 .grind-header {
-  height: 60px;
-  padding: 0 20px;
+  flex: 0 0 auto;
+  min-height: 60px;
+  padding: 12px clamp(12px, 3vw, 24px);
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  position: relative;
+  z-index: 10;
+}
+
+.grind-header-left, .grind-header-right {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.grind-header-left {
+  flex: 1 1 auto;
+}
+
+.grind-header-right {
   flex-shrink: 0;
 }
 
@@ -25,59 +47,75 @@
   background: var(--border-strong);
 }
 
+@media (max-width: 600px) {
+  .hidden-mobile { display: none; }
+  .timer-label { display: none; }
+  .grind-header { gap: 12px; padding: 12px; }
+}
+
 .warning-badge {
   background: rgba(245, 158, 11, 0.1);
   padding: 6px 12px;
   border-radius: var(--radius-full);
   font-size: 0.85rem;
   font-weight: 600;
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
 /* New Focused Layout */
 .focus-workspace {
-  flex: 1;
+  flex: 1 1 0px;
   overflow-y: auto;
-  padding: 40px 20px;
+  padding: clamp(16px, 4vw, 40px) clamp(12px, 3vw, 20px);
   display: flex;
+  position: relative;
+  z-index: 1;
 }
 
 .focus-content-wrapper {
   width: 100%;
-  max-width: 800px;
+  max-width: 840px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: clamp(20px, 4vw, 32px);
   padding-bottom: 60px;
 }
 
 .problem-card, .commit-card {
-  padding: 32px;
+  padding: clamp(20px, 4vw, 32px);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-strong);
+  background: rgba(18, 18, 20, 0.65);
+  backdrop-filter: blur(16px);
 }
 
 .problem-header {
   margin-bottom: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .difficulty-badge {
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: var(--radius-full);
   font-size: 0.85rem;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
-.difficulty-badge.easy { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-.difficulty-badge.medium { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
-.difficulty-badge.hard { background: rgba(239, 68, 68, 0.1); color: var(--error); }
+.difficulty-badge.easy { background: rgba(16, 185, 129, 0.12); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.25); }
+.difficulty-badge.medium { background: rgba(245, 158, 11, 0.12); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.25); }
+.difficulty-badge.hard { background: rgba(239, 68, 68, 0.12); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.25); }
 
 .problem-content {
   color: var(--text-primary);
   line-height: 1.8;
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.1rem);
 }
 .problem-content p { margin-bottom: 16px; }
 .problem-content code {
@@ -93,23 +131,23 @@
   border-top: 1px solid var(--border-subtle);
   padding-top: 32px;
 }
-.hints-section h3 { font-size: 1.4rem; color: var(--text-primary); }
+.hints-section h3 { font-size: clamp(1.2rem, 2vw, 1.4rem); color: var(--text-primary); }
 
 .hint-card {
   padding: 20px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   background: var(--bg-tertiary);
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .hint-card.locked { 
-  opacity: 0.7; 
+  opacity: 0.75; 
   border-style: dashed;
 }
 .hint-card.unlocked {
   border-color: var(--warning);
   background: rgba(245, 158, 11, 0.05);
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.12);
 }
 .hint-header {
   font-size: 1rem;
@@ -127,29 +165,32 @@
   color: var(--text-primary);
   white-space: pre-wrap;
   font-size: 1.05rem;
+  line-height: 1.6;
 }
 .locked-text {
   font-style: italic;
 }
 
-/* Modals */
+/* Modals with Glassmorphism Depth */
 .modal-overlay {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 20px;
   z-index: 100;
 }
 
 .break-overlay {
-  background: rgba(10, 10, 11, 0.98);
-  backdrop-filter: blur(20px);
+  background: rgba(10, 10, 11, 0.96);
+  backdrop-filter: blur(24px);
   z-index: 200;
 }
 
@@ -158,28 +199,33 @@
   flex-direction: column;
   align-items: center;
   color: var(--text-primary);
+  text-align: center;
 }
 
 .modal-content {
-  width: 90%;
-  max-width: 550px;
-  padding: 40px;
-  background: var(--bg-secondary);
-  box-shadow: var(--shadow-lg);
+  width: min(92%, 560px);
+  padding: clamp(24px, 5vw, 40px);
+  background: rgba(18, 18, 20, 0.95);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-strong);
 }
-.modal-content.border-success { border-color: var(--success); }
+.modal-content.border-success { border-color: var(--success); box-shadow: 0 0 30px rgba(16, 185, 129, 0.2); }
 
 .commit-textarea {
   width: 100%;
+  min-height: 120px;
   background: var(--bg-primary);
   border: 1px solid var(--border-strong);
   margin-bottom: 24px;
   font-size: 1rem;
+  line-height: 1.6;
+  border-radius: var(--radius-md);
+  padding: 14px;
 }
 .commit-textarea:focus {
   border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .w-full { width: 100%; }
@@ -192,7 +238,8 @@
 .text-muted { color: var(--text-muted) !important; }
 .text-accent-primary { color: var(--accent-primary) !important; }
 
-/* UI Polish Rules */
+/* Numeric Tabular Alignment */
 .session-timer, .pomodoro-timer, .problem-timer, .break-timer {
   font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
 }

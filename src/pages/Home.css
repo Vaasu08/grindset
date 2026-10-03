@@ -1,7 +1,8 @@
 .home-container {
-  padding-top: 60px;
-  padding-bottom: 60px;
-  gap: 40px;
+  padding-top: clamp(24px, 5vw, 60px);
+  padding-bottom: clamp(32px, 6vw, 80px);
+  gap: clamp(24px, 4vw, 40px);
+  width: 100%;
 }
 
 .home-header {
@@ -9,19 +10,21 @@
 }
 
 .logo h1 {
-  font-size: 3rem;
-  letter-spacing: -0.05em;
+  font-size: clamp(2rem, 5vw + 0.5rem, 3.5rem);
+  letter-spacing: -0.04em;
   text-transform: uppercase;
 }
 
 .subtitle {
   color: var(--text-secondary);
-  font-size: 1.1rem;
+  font-size: clamp(0.9rem, 1.5vw, 1.15rem);
+  max-width: 600px;
+  line-height: 1.6;
 }
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 20px;
   width: 100%;
 }
@@ -31,12 +34,13 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: transform 0.2s;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .stat-card:hover {
-  transform: translateY(-5px);
-  border-color: var(--accent-primary);
+  transform: translateY(-4px);
+  border-color: rgba(255, 46, 84, 0.4);
+  box-shadow: 0 12px 24px -6px rgba(255, 46, 84, 0.15);
 }
 
 .stat-header {
@@ -52,8 +56,9 @@
 
 .stat-value {
   font-family: var(--font-display);
-  font-size: 2rem;
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
   font-weight: 700;
+  line-height: 1.2;
 }
 
 .stat-sub {
@@ -63,8 +68,8 @@
 
 .launch-panel {
   width: 100%;
-  max-width: 600px;
-  padding: 40px;
+  max-width: 800px;
+  padding: clamp(24px, 5vw, 40px);
   text-align: center;
   border-top: 2px solid var(--accent-primary);
 }
@@ -73,24 +78,36 @@
   background: var(--bg-tertiary);
   padding: 6px;
   border-radius: var(--radius-lg);
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 400px;
 }
 
 .duration-btn {
-  padding: 12px 24px;
+  flex: 1;
+  min-height: 44px;
+  padding: 10px 16px;
   border-radius: var(--radius-md);
   font-weight: 600;
+  font-size: 0.9rem;
   color: var(--text-secondary);
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .duration-btn:hover {
   color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .duration-btn.active {
   background: var(--bg-secondary);
   color: var(--accent-primary);
   box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-subtle);
 }
 
 .feature-item {
@@ -103,7 +120,8 @@
 
 .topic-select {
   width: 100%;
-  padding: 12px;
+  min-height: 44px;
+  padding: 12px 16px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -112,11 +130,12 @@
   font-size: 1rem;
   outline: none;
   cursor: pointer;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .topic-select:focus {
   border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .topic-select option {
@@ -125,16 +144,88 @@
 }
 
 .launch-btn {
+  min-height: 52px;
+  padding: 14px 28px;
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+}
+
+/* Responsive Dashboard Grid for Heatmap and History */
+.bottom-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
   width: 100%;
-  padding: 16px;
-  font-size: 1.2rem;
-  margin-top: 10px;
+  max-width: 1240px;
+  margin-top: 24px;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: -10px;
+}
+
+.subtopic-container {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 24px;
+  align-items: flex-start;
+  min-height: 300px;
+}
+
+.subtopic-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.session-features {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.topic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 960px) {
+  .bottom-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .subtopic-container {
+    flex-direction: column;
+  }
+  .subtopic-column {
+    width: 100%;
+    max-height: 250px;
+  }
+  .duration-selector {
+    flex-wrap: wrap;
+  }
 }
 
 /* ── Heatmap Panel (LeetCode / GitHub style) ── */
 .heatmap-panel {
   width: 100%;
-  padding: 28px;
+  padding: clamp(18px, 4vw, 28px);
+  min-width: 0;
 }
 
 .heatmap-panel-header {
@@ -142,6 +233,8 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .heatmap-panel-header h3 {
@@ -161,6 +254,7 @@
   padding: 4px 10px;
   border-radius: var(--radius-full);
   font-weight: 600;
+  border: 1px solid rgba(255, 46, 84, 0.2);
 }
 
 .heatmap-wrapper {
@@ -169,7 +263,9 @@
   gap: 6px;
   width: 100%;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding-bottom: 8px;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
 }
 
 .heatmap-months {
@@ -180,6 +276,7 @@
   letter-spacing: 0.02em;
   padding-left: 32px;
   gap: 0;
+  min-width: 600px;
 }
 
 .heatmap-months span {
@@ -190,6 +287,7 @@
 .heatmap-body {
   display: flex;
   gap: 6px;
+  min-width: 600px;
 }
 
 .heatmap-day-labels {
@@ -222,22 +320,22 @@
   height: 11px;
   border-radius: 2px;
   background-color: var(--bg-tertiary);
-  transition: transform 0.15s ease, outline-color 0.15s ease;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), outline-color 0.15s ease;
   outline: 1px solid transparent;
   cursor: pointer;
   position: relative;
 }
 
 .heatmap-cell:hover {
-  transform: scale(1.5);
-  outline: 1px solid var(--text-muted);
-  z-index: 2;
+  transform: scale(1.6);
+  outline: 1px solid var(--text-secondary);
+  z-index: 10;
 }
 
 .heatmap-cell.level-1 { background-color: rgba(255, 46, 84, 0.25); }
 .heatmap-cell.level-2 { background-color: rgba(255, 46, 84, 0.5); }
 .heatmap-cell.level-3 { background-color: rgba(255, 46, 84, 0.75); }
-.heatmap-cell.level-4 { background-color: #FF2E54; box-shadow: 0 0 4px rgba(255, 46, 84, 0.4); }
+.heatmap-cell.level-4 { background-color: #FF2E54; box-shadow: 0 0 6px rgba(255, 46, 84, 0.5); }
 
 .heatmap-legend {
   display: flex;
@@ -257,9 +355,10 @@
 
 /* ── History & Reviews Panel ── */
 .history-panel {
-  padding: 28px;
+  padding: clamp(18px, 4vw, 28px);
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .history-panel-header {
@@ -267,6 +366,8 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .history-panel-header h3 {
@@ -302,14 +403,14 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   max-height: 280px;
   padding-right: 4px;
 }
 
 /* Custom scrollbar for history list */
 .history-list::-webkit-scrollbar {
-  width: 4px;
+  width: 5px;
 }
 .history-list::-webkit-scrollbar-track {
   background: transparent;
@@ -326,17 +427,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
+  padding: 12px 14px;
+  min-height: 48px;
   background: var(--bg-tertiary);
   border-radius: var(--radius-md);
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
+  border: 1px solid var(--border-subtle);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   gap: 12px;
 }
 
 .history-item:hover {
-  border-color: var(--border-subtle);
+  border-color: var(--border-strong);
   background: var(--bg-secondary);
+  transform: translateX(2px);
 }
 
 .history-item-left {
@@ -374,7 +477,7 @@
 }
 
 .history-item-title {
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-primary);
   white-space: nowrap;
@@ -452,6 +555,7 @@
 .history-cta-btn {
   width: 100%;
   padding: 14px;
+  min-height: 48px;
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.03em;

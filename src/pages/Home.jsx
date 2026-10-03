@@ -415,7 +415,7 @@ const Home = ({ session }) => {
       exit={{ opacity: 0, x: 20 }}
       transition={{ duration: 0.3 }}
     >
-      <div style={{position: 'absolute', top: 20, right: 20, display: 'flex', alignItems: 'center', gap: '10px'}}>
+      <div className="top-bar">
         {session?.user?.user_metadata?.avatar_url && (
           <img 
             src={session.user.user_metadata.avatar_url} 
@@ -503,7 +503,7 @@ const Home = ({ session }) => {
           </div>
 
           {selectionMode === 'topic' && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px', width: '100%', marginBottom: '24px' }}>
+            <div className="topic-grid">
               {Object.keys(NEETCODE_TOPICS).map((topic) => (
                 <motion.div
                   key={topic}
@@ -532,8 +532,8 @@ const Home = ({ session }) => {
           )}
 
           {selectionMode === 'subtopic' && (
-             <div style={{ display: 'flex', gap: '20px', width: '100%', marginBottom: '24px', alignItems: 'flex-start', minHeight: '300px' }}>
-               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
+             <div className="subtopic-container">
+               <div className="subtopic-column" style={{ flex: 1 }}>
                  {Object.keys(NEETCODE_SUBTOPICS).map(topic => (
                    <div 
                      key={topic}
@@ -555,7 +555,7 @@ const Home = ({ session }) => {
                    </div>
                  ))}
                </div>
-               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1.5, maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
+               <div className="subtopic-column" style={{ flex: 1.5 }}>
                  {selectedTopic && NEETCODE_SUBTOPICS[selectedTopic] && Object.keys(NEETCODE_SUBTOPICS[selectedTopic]).map(sub => (
                    <motion.div
                      key={sub}
@@ -620,7 +620,7 @@ const Home = ({ session }) => {
         </div>
       </motion.div>
 
-      <div className="bottom-dashboard-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', width: '100%', maxWidth: '1200px', marginTop: '24px' }}>
+      <div className="bottom-dashboard-grid">
         <motion.div className="glass-panel heatmap-panel" style={{ width: '100%', margin: 0 }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <div className="heatmap-panel-header">
             <h3>Consistency Map</h3>

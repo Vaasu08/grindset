@@ -1,24 +1,47 @@
 .auth-container {
   min-height: 100vh;
-  padding: 20px;
+  padding: clamp(20px, 5vw, 40px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
 .auth-card {
   width: 100%;
-  max-width: 400px;
-  padding: 40px;
+  max-width: 420px;
+  padding: clamp(24px, 5vw, 40px);
+  background: rgba(18, 18, 20, 0.75);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.6);
+}
+
+.auth-card h2 {
+  font-size: clamp(1.25rem, 3vw, 1.6rem);
 }
 
 .auth-message {
   margin-bottom: 20px;
   text-align: center;
   font-size: 0.9rem;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 .toggle-auth {
   font-size: 0.9rem;
-  text-decoration: underline;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
 }
 .toggle-auth:hover {
-  color: var(--text-primary);
+  color: var(--accent-primary);
+  text-decoration: underline;
 }

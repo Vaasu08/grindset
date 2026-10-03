@@ -357,23 +357,23 @@ const GrindSession = ({ session }) => {
     >
       <audio ref={audioRef} src={AUDIO_TRACKS[currentTrackIndex].url} loop />
       
-      <header className="grind-header flex justify-between items-center">
-        <div className="flex items-center gap-4">
+      <header className="grind-header">
+        <div className="grind-header-left">
           <div className="brand flex items-center gap-2">
             <span className="text-gradient font-display font-bold">GRINDSET</span>
           </div>
-          <div className="vertical-divider"></div>
+          <div className="vertical-divider hidden-mobile"></div>
           
           <div className="session-timer flex items-center gap-2" title="Total Session Remaining">
-            <Clock size={16} /> Session: {formatTime(sessionTimeLeft)}
+            <Clock size={16} /> <span className="timer-label">Session:</span> {formatTime(sessionTimeLeft)}
           </div>
           
           <div className="pomodoro-timer flex items-center gap-2 text-warning" title="Pomodoro Work Time">
-            <Coffee size={16} /> Pomo: {formatTime(POMODORO_WORK - pomodoroTimeElapsed)}
+            <Coffee size={16} /> <span className="timer-label">Pomo:</span> {formatTime(POMODORO_WORK - pomodoroTimeElapsed)}
           </div>
 
           <div className={`problem-timer flex items-center gap-2 ${(problemTimeElapsed / 60) > problemTimeLimit ? 'text-error animate-pulse' : ''}`} title="FAANG Recommended Time">
-            Problem: {formatTime(problemTimeElapsed)} / 
+            <span className="timer-label">Prob:</span> {formatTime(problemTimeElapsed)} / 
             <select 
               value={problemTimeLimit}
               onChange={(e) => setProblemTimeLimit(Number(e.target.value))}
@@ -389,15 +389,15 @@ const GrindSession = ({ session }) => {
                 fontWeight: 'bold'
               }}
             >
-              <option value={15} style={{background: 'var(--bg-secondary)', color: 'white'}}>15:00 (Easy)</option>
-              <option value={25} style={{background: 'var(--bg-secondary)', color: 'white'}}>25:00 (Medium)</option>
-              <option value={45} style={{background: 'var(--bg-secondary)', color: 'white'}}>45:00 (Hard)</option>
-              <option value={60} style={{background: 'var(--bg-secondary)', color: 'white'}}>60:00 (Max)</option>
+              <option value={15} style={{background: 'var(--bg-secondary)', color: 'white'}}>15m (E)</option>
+              <option value={25} style={{background: 'var(--bg-secondary)', color: 'white'}}>25m (M)</option>
+              <option value={45} style={{background: 'var(--bg-secondary)', color: 'white'}}>45m (H)</option>
+              <option value={60} style={{background: 'var(--bg-secondary)', color: 'white'}}>60m (Max)</option>
             </select>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="grind-header-right">
           <button className="btn btn-outline text-error" style={{padding: '4px 8px', fontSize: '12px', borderColor: 'var(--error)'}} onClick={handleAbort}>
             Abort Session
           </button>
