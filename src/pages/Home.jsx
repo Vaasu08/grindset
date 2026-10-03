@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Play, Activity, Target, Flame, Brain, Clock, List, ChevronRight, CheckCircle } from '../Icons';
+import { Zap, RefreshCcw, RefreshCw, ShieldCheck, ShieldAlert, Skull } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchAllProblems } from '../api';
 import { supabase } from '../supabaseClient';
@@ -409,87 +410,85 @@ const Home = ({ session }) => {
 
   return (
     <motion.div 
-      className="home-container container flex-col items-center"
+      className="home-container"
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="top-bar">
-        {session?.user?.user_metadata?.avatar_url && (
-          <img 
-            src={session.user.user_metadata.avatar_url} 
-            alt="Profile" 
-            referrerPolicy="no-referrer"
-            style={{width: '40px', height: '40px', borderRadius: '50%', border: '2px solid var(--accent-primary)', objectFit: 'cover'}}
-          />
-        )}
-        <button 
-          className="btn btn-outline" 
-          style={{padding: '6px 12px', fontSize: '12px'}}
-          onClick={async () => {
-            await supabase.auth.signOut();
-          }}
-        >
-          Sign Out
+      <div className="top-bar-intense">
+        <div className="user-profile-badge">
+          <div className="avatar-wrapper">
+             <img src={session?.user?.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Grinder"} alt="User Profile" referrerPolicy="no-referrer" />
+          </div>
+          <div className="user-status-text">
+            <span className="pilot-status">Pilot Status</span>
+            <span className="elite-grinder">{session?.user?.user_metadata?.full_name || "Elite Grindr"}</span>
+          </div>
+        </div>
+        <button className="btn-terminal-exit" onClick={async () => { await supabase.auth.signOut(); }}>
+          Terminal Exit
         </button>
       </div>
 
-      <motion.header 
-        className="home-header flex-col items-center gap-4"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div className="logo flex items-center gap-2">
-          <img src="/logo.png" alt="Grindset Logo" style={{ width: '56px', height: '56px', objectFit: 'contain' }} />
-          <h1 className="text-gradient">GRINDSET</h1>
+      <header className="header-intense">
+        <div className="logo-group">
+          <img src="https://vgbujcuwptvheqijyjbe.supabase.co/storage/v1/object/public/hmac-uploads/projects/d33af359-880b-4ce4-bc68-61b545dc2f04/brand-assets/logo.png/logo.png" alt="Grindset Logo" className="logo-img" />
+          <h1 className="logo-text">GRINDSET</h1>
         </div>
-        <p className="subtitle">Leetcode grind with forced reflection, spaced repetition, and zero tab-switching.</p>
-      </motion.header>
+        <div className="protocol-bar">
+          <span className="protocol-line"></span>LEETCODE REFLECTION PROTOCOL<span className="protocol-line"></span>
+        </div>
+      </header>
 
-      <div className="dashboard-grid">
-        <motion.div className="glass-panel stat-card" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
-          <div className="stat-header"><Flame size={20} className="stat-icon" /><h3>Streak</h3></div>
-          <div className="stat-value text-gradient">{stats.streak} Days</div>
-          <div className="stat-sub">{stats.streak > 0 ? "Don't break it." : "Day zero. Fix that."}</div>
+      <div className="stats-grid-intense">
+        <motion.div className="glass-panel stat-card-intense" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <div className="stat-header-intense">
+            <div className="stat-title"><Flame className="icon-accent" size={24} /><h3>Streak</h3></div>
+            <span className="sec-tag">SEC-01</span>
+          </div>
+          <div className="stat-value-intense tabular">{stats.streak} <span className="unit">Days</span></div>
+          <div className="progress-bar-bg"><div className="progress-bar-fill" style={{width: `${Math.min(stats.streak * 5, 100)}%`}}></div></div>
         </motion.div>
 
-        <motion.div className="glass-panel stat-card" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-          <div className="stat-header"><Brain size={20} className="stat-icon" /><h3>Weakness</h3></div>
-          <div className="stat-value">{stats.weakness}</div>
-          <div className="stat-sub">{stats.weaknessStat}</div>
+        <motion.div className="glass-panel stat-card-intense" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <div className="stat-header-intense">
+            <div className="stat-title"><Brain className="icon-accent" size={24} /><h3>Weakness</h3></div>
+            <span className="sec-tag">SEC-02</span>
+          </div>
+          <div className="stat-value-intense" style={{ fontSize: 'clamp(2rem, 3.5vw, 3rem)' }}>{stats.weakness}</div>
+          <div className="stat-sub-intense error-text">{stats.weaknessStat}</div>
         </motion.div>
         
-        <motion.div className="glass-panel stat-card" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
-          <div className="stat-header"><Clock size={20} className="stat-icon" /><h3>Deep Work</h3></div>
-          <div className="stat-value">{stats.deepWork}</div>
-          <div className="stat-sub">Total focused time</div>
+        <motion.div className="glass-panel stat-card-intense" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <div className="stat-header-intense">
+            <div className="stat-title"><Clock className="icon-accent" size={24} /><h3>Focus Time</h3></div>
+            <span className="sec-tag">SEC-03</span>
+          </div>
+          <div className="stat-value-intense tabular" dangerouslySetInnerHTML={{ __html: stats.deepWork.replace('h', '<span class="unit">h</span>').replace('m', '<span class="unit">m</span>') }}></div>
+          <div className="stat-sub-intense italic-text">Synchronizing with deep work engine...</div>
         </motion.div>
       </div>
 
-      <motion.div 
-        className="glass-panel launch-panel flex-col items-center gap-6"
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.4 }}
-      >
-        <h2>Configure Next Session</h2>
+      <motion.div className="glass-panel launch-panel-intense" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }}>
+        <div className="glow-line"></div>
+        <h2>Mission Config</h2>
         
-        <div className="flex-col w-full text-left" style={{maxWidth: '800px'}}>
-          <label className="text-secondary flex items-center gap-2" style={{marginBottom: '12px'}}>
-            <List size={16} /> Topic Filter
-          </label>
+        <div className="config-section">
+          <div className="config-header">
+            <span className="config-label">Target Selection</span>
+            <span className="config-status">READY_TO_DEPLOY</span>
+          </div>
           
-          <div className="flex gap-4" style={{marginBottom: '20px', flexWrap: 'wrap'}}>
+          <div className="mode-buttons">
             {[
-              { id: 'mixed', label: 'Mixed Topics' },
-              { id: 'topic', label: 'Topic Wise' },
-              { id: 'subtopic', label: 'Subtopic Wise' }
+              { id: 'mixed', label: 'Mixed-Ops' },
+              { id: 'topic', label: 'Topic-Focus' },
+              { id: 'subtopic', label: 'Sub-Target' }
             ].map(mode => (
               <button 
                 key={mode.id} 
-                className={`btn ${selectionMode === mode.id ? 'btn-primary' : 'btn-outline'}`}
-                style={{textTransform: 'uppercase', fontSize: '0.85rem', flex: 1, minWidth: '150px'}}
+                className={`btn-mode-intense ${selectionMode === mode.id ? 'active' : ''}`}
                 onClick={() => {
                   setSelectionMode(mode.id);
                   if (mode.id === 'topic' || mode.id === 'subtopic') {
@@ -501,148 +500,133 @@ const Home = ({ session }) => {
               </button>
             ))}
           </div>
+        </div>
 
-          {selectionMode === 'topic' && (
-            <div className="topic-grid">
-              {Object.keys(NEETCODE_TOPICS).map((topic) => (
-                <motion.div
-                  key={topic}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => setSelectedTopic(topic)}
-                  style={{
-                    padding: '12px',
-                    borderRadius: 'var(--radius-md)',
-                    border: `1px solid ${selectedTopic === topic ? 'var(--accent-primary)' : 'var(--border-subtle)'}`,
-                    background: selectedTopic === topic ? 'var(--bg-secondary)' : 'transparent',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    transition: 'background 0.2s, border-color 0.2s'
-                  }}
-                >
-                  <span style={{ fontSize: '0.9rem', fontWeight: selectedTopic === topic ? 'bold' : 'normal', color: selectedTopic === topic ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{topic}</span>
-                  {selectedTopic === topic && (
-                    <motion.div layoutId="activeTopicDot" style={{width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-primary)'}} />
-                  )}
-                </motion.div>
-              ))}
-            </div>
-          )}
+        {selectionMode === 'topic' && (
+          <div className="topic-grid">
+            {Object.keys(NEETCODE_TOPICS).map((topic) => (
+              <motion.div
+                key={topic}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => setSelectedTopic(topic)}
+                style={{
+                  padding: '12px',
+                  borderRadius: 'var(--radius-md)',
+                  border: `1px solid ${selectedTopic === topic ? 'var(--accent-primary)' : 'var(--border-subtle)'}`,
+                  background: selectedTopic === topic ? 'var(--bg-secondary)' : 'transparent',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  transition: 'background 0.2s, border-color 0.2s'
+                }}
+              >
+                <span style={{ fontSize: '0.9rem', fontWeight: selectedTopic === topic ? 'bold' : 'normal', color: selectedTopic === topic ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{topic}</span>
+                {selectedTopic === topic && (
+                  <motion.div layoutId="activeTopicDot" style={{width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-primary)'}} />
+                )}
+              </motion.div>
+            ))}
+          </div>
+        )}
 
-          {selectionMode === 'subtopic' && (
-             <div className="subtopic-container">
-               <div className="subtopic-column" style={{ flex: 1 }}>
-                 {Object.keys(NEETCODE_SUBTOPICS).map(topic => (
-                   <div 
-                     key={topic}
-                     onClick={() => {
-                       setSelectedTopic(topic);
-                       const subs = Object.keys(NEETCODE_SUBTOPICS[topic]);
-                       if (subs.length > 0) setSelectedSubtopic(subs[0]);
-                     }}
-                     style={{
-                       padding: '12px', cursor: 'pointer', borderRadius: '4px',
-                       background: selectedTopic === topic ? 'var(--bg-secondary)' : 'transparent',
-                       borderLeft: selectedTopic === topic ? '3px solid var(--accent-primary)' : '3px solid transparent',
-                       fontSize: '0.9rem', color: selectedTopic === topic ? 'var(--text-primary)' : 'var(--text-secondary)',
-                       fontWeight: selectedTopic === topic ? 'bold' : 'normal',
-                       transition: 'all 0.2s'
-                     }}
-                   >
-                     {topic}
-                   </div>
-                 ))}
-               </div>
-               <div className="subtopic-column" style={{ flex: 1.5 }}>
-                 {selectedTopic && NEETCODE_SUBTOPICS[selectedTopic] && Object.keys(NEETCODE_SUBTOPICS[selectedTopic]).map(sub => (
-                   <motion.div
-                     key={sub}
-                     onClick={() => setSelectedSubtopic(sub)}
-                     style={{
-                       padding: '12px', cursor: 'pointer', borderRadius: '4px',
-                       border: `1px solid ${selectedSubtopic === sub ? 'var(--accent-primary)' : 'var(--border-subtle)'}`,
-                       background: selectedSubtopic === sub ? 'rgba(0, 214, 178, 0.1)' : 'transparent',
-                       color: selectedSubtopic === sub ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                       fontSize: '0.9rem',
-                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                       transition: 'all 0.2s'
-                     }}
-                   >
-                     {sub}
-                     {selectedSubtopic === sub && <div style={{width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-primary)'}} />}
-                   </motion.div>
-                 ))}
-               </div>
+        {selectionMode === 'subtopic' && (
+           <div className="subtopic-container">
+             <div className="subtopic-column" style={{ flex: 1 }}>
+               {Object.keys(NEETCODE_SUBTOPICS).map(topic => (
+                 <div 
+                   key={topic}
+                   onClick={() => {
+                     setSelectedTopic(topic);
+                     const subs = Object.keys(NEETCODE_SUBTOPICS[topic]);
+                     if (subs.length > 0) setSelectedSubtopic(subs[0]);
+                   }}
+                   style={{
+                     padding: '12px', cursor: 'pointer', borderRadius: '4px',
+                     background: selectedTopic === topic ? 'var(--bg-secondary)' : 'transparent',
+                     borderLeft: selectedTopic === topic ? '3px solid var(--accent-primary)' : '3px solid transparent',
+                     fontSize: '0.9rem', color: selectedTopic === topic ? 'var(--text-primary)' : 'var(--text-secondary)',
+                     fontWeight: selectedTopic === topic ? 'bold' : 'normal',
+                     transition: 'all 0.2s'
+                   }}
+                 >
+                   {topic}
+                 </div>
+               ))}
              </div>
-          )}
-        </div>
+             <div className="subtopic-column" style={{ flex: 1.5 }}>
+               {selectedTopic && NEETCODE_SUBTOPICS[selectedTopic] && Object.keys(NEETCODE_SUBTOPICS[selectedTopic]).map(sub => (
+                 <motion.div
+                   key={sub}
+                   onClick={() => setSelectedSubtopic(sub)}
+                   style={{
+                     padding: '12px', cursor: 'pointer', borderRadius: '4px',
+                     border: `1px solid ${selectedSubtopic === sub ? 'var(--accent-primary)' : 'var(--border-subtle)'}`,
+                     background: selectedSubtopic === sub ? 'rgba(0, 214, 178, 0.1)' : 'transparent',
+                     color: selectedSubtopic === sub ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                     fontSize: '0.9rem',
+                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                     transition: 'all 0.2s'
+                   }}
+                 >
+                   {sub}
+                   {selectedSubtopic === sub && <div style={{width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-primary)'}} />}
+                 </motion.div>
+               ))}
+             </div>
+           </div>
+        )}
         
-        <div className="duration-selector flex gap-4">
-          {[60, 90, 120].map(time => (
-            <button 
-              key={time}
-              className={`duration-btn ${sessionLength === time ? 'active' : ''}`}
-              onClick={() => setSessionLength(time)}
-            >
-              {time} MIN
-            </button>
-          ))}
+        <div className="duration-section">
+          <span className="config-label center">Session Duration</span>
+          <div className="duration-selector-intense">
+            {[60, 90, 120].map(time => (
+              <button 
+                key={time}
+                className={`btn-duration-intense ${sessionLength === time ? 'active' : ''}`}
+                onClick={() => setSessionLength(time)}
+              >
+                {time}M
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="session-features flex gap-6">
-          <div className="feature-item"><Target size={16} /> Spaced Repetition Active</div>
-          <div className="feature-item"><Activity size={16} /> Pomodoro (50/10)</div>
-        </div>
-
-        <div className="flex gap-4">
+        <div className="launch-action-area">
           <button 
-            className="btn btn-primary launch-btn animate-pulse-glow" 
+            className="btn-grind-mode animate-pulse-glow" 
             onClick={() => startGrind()}
             disabled={loading}
           >
-            <Play size={20} />
-            {loading ? 'SYNCING...' : 'ENTER GRIND MODE'}
+            <Zap size={24} /> {loading ? 'SYNCING...' : 'ENGAGE GRIND MODE'}
           </button>
           
-          {weaknessTopic !== 'None' && (
-            <button 
-              className="btn btn-outline launch-btn" 
-              style={{ borderColor: 'var(--accent-secondary)', color: 'var(--accent-secondary)' }}
-              onClick={() => startGrind(weaknessTopic)} 
-              disabled={loading}
-            >
-              <Brain size={20} />
-              TARGET WEAKNESS
-            </button>
-          )}
+          <div className="session-flags">
+            <div className="flag"><RefreshCcw className="icon-primary" size={14}/> Spaced Logic Active</div>
+            <div className="flag"><Flame className="icon-primary" size={14}/> Pomodoro Sync 50:10</div>
+          </div>
         </div>
       </motion.div>
 
-      <div className="bottom-dashboard-grid">
-        <motion.div className="glass-panel heatmap-panel" style={{ width: '100%', margin: 0 }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-          <div className="heatmap-panel-header">
-            <h3>Consistency Map</h3>
-            <span className="heatmap-total-badge">
-              {Object.values(heatmapData).reduce((a, b) => a + b, 0)} submissions
-            </span>
-          </div>
-          <div className="heatmap-wrapper">
-            <div className="heatmap-months">
-              {getMonths().map((m, i) => <span key={i}>{m}</span>)}
+      <div className="bottom-grid-intense">
+        <motion.div className="glass-panel radar-panel terminal-grid" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
+          <div className="panel-header-intense">
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <h3>Consistency Radar</h3>
+              <span className="scanning-text">SCANNING_HISTORY_LOGS...</span>
             </div>
-            <div className="heatmap-body">
-              <div className="heatmap-day-labels">
-                <span></span>
-                <span>Mon</span>
-                <span></span>
-                <span>Wed</span>
-                <span></span>
-                <span>Fri</span>
-                <span></span>
+            <div className="radar-badge">
+              {Object.values(heatmapData).reduce((a, b) => a + b, 0)} ENTRIES
+            </div>
+          </div>
+          
+          <div className="radar-map-wrapper">
+            <div className="radar-map-inner">
+              <div className="heatmap-months">
+                {getMonths().map((m, i) => <span key={i}>{m}</span>)}
               </div>
-              <div className="heatmap-grid">
+              <div className="radar-grid-bg">
                 {Array.from({ length: 364 }).map((_, i) => {
                   const date = new Date();
                   date.setDate(date.getDate() - (363 - i));
@@ -658,57 +642,63 @@ const Home = ({ session }) => {
                   return <div key={i} className={`heatmap-cell level-${intensity}`} title={`${count} problems on ${dateStr}`}></div>
                 })}
               </div>
-            </div>
-            <div className="heatmap-legend">
-              <span>Less</span>
-              <div className="heatmap-legend-cell" style={{background: 'var(--bg-tertiary)'}}></div>
-              <div className="heatmap-legend-cell" style={{background: 'rgba(255, 46, 84, 0.25)'}}></div>
-              <div className="heatmap-legend-cell" style={{background: 'rgba(255, 46, 84, 0.5)'}}></div>
-              <div className="heatmap-legend-cell" style={{background: 'rgba(255, 46, 84, 0.75)'}}></div>
-              <div className="heatmap-legend-cell" style={{background: '#FF2E54'}}></div>
-              <span>More</span>
+              
+              <div className="heatmap-legend">
+                <span>MIN</span>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  <div className="heatmap-cell"></div>
+                  <div className="heatmap-cell level-1"></div>
+                  <div className="heatmap-cell level-2"></div>
+                  <div className="heatmap-cell level-3"></div>
+                  <div className="heatmap-cell level-4"></div>
+                </div>
+                <span>MAX</span>
+              </div>
             </div>
           </div>
         </motion.div>
 
-        <motion.div className="glass-panel history-panel" style={{ width: '100%' }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
-          <div className="history-panel-header">
+        <motion.div className="glass-panel history-panel-intense" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 }}>
+          <div className="panel-header-intense">
             <h3>Solved History</h3>
             {pendingReviewsCount > 0 && (
-              <span className="history-due-badge">
-                <span className="history-due-dot"></span>
-                {pendingReviewsCount} due for review
-              </span>
+              <div className="history-due-badge-intense">
+                <div className="history-due-dot"></div>
+                {pendingReviewsCount} CRITICAL REVIEWS
+              </div>
             )}
           </div>
           
-          <div className="history-list">
+          <div className="history-list-intense">
             {solvedHistory.length === 0 ? (
-              <div className="history-empty">
-                <div className="history-empty-icon">
-                  <Target size={24} />
-                </div>
-                <span>No problems solved yet.</span>
-                <span style={{fontSize: '0.8rem'}}>Start a session to build your history!</span>
+              <div style={{ padding: '40px', textAlign: 'center', color: '#71717a', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                No history logs detected
               </div>
             ) : (
               solvedHistory.map((record, i) => {
                 const diff = record.difficulty?.toLowerCase() || 'medium';
                 const mins = Math.floor((record.time_taken_seconds || 0) / 60);
-                const secs = (record.time_taken_seconds || 0) % 60;
+                const secs = ((record.time_taken_seconds || 0) % 60).toString().padStart(2, '0');
+                
+                let Icon = ShieldCheck;
+                let statusLabel = "Secure";
+                if (diff === 'medium') { Icon = ShieldAlert; statusLabel = "Warning"; }
+                if (diff === 'hard') { Icon = Skull; statusLabel = "Danger"; }
+                
                 return (
-                  <div key={i} className="history-item">
-                    <div className="history-item-left">
-                      <div className={`history-item-icon ${diff}`}>
-                        <CheckCircle size={14} />
+                  <div key={i} className={`history-item-intense ${diff}`}>
+                    <div className="history-left">
+                      <div className={`history-icon-box ${diff}`}>
+                        <Icon size={20} />
                       </div>
-                      <span className="history-item-title">{record.title}</span>
+                      <div className="history-info">
+                        <span className="title">{record.title}</span>
+                        <span className="vector-id">Vector ID: {Math.random().toString(36).substring(2, 5)}</span>
+                      </div>
                     </div>
-                    <div className="history-item-meta">
-                      {record.difficulty && (
-                        <span className={`history-item-difficulty ${diff}`}>{record.difficulty}</span>
-                      )}
-                      <span className="history-item-time">{mins}:{secs.toString().padStart(2, '0')}</span>
+                    <div className="history-right">
+                      <span className={`history-tag ${diff}`}>{statusLabel}</span>
+                      <span className="history-time">{mins}:{secs}</span>
                     </div>
                   </div>
                 );
@@ -716,16 +706,18 @@ const Home = ({ session }) => {
             )}
           </div>
           
-          <div className="history-cta">
-             <button 
-               className={`btn history-cta-btn ${pendingReviewsCount > 0 ? 'btn-primary animate-pulse-glow' : 'all-caught-up'}`}
-               onClick={startSpacedSolving}
-               disabled={loading || pendingReviewsCount === 0}
-             >
-               <Brain size={18} />
-               {pendingReviewsCount > 0 ? `START SPACED REVIEW (${pendingReviewsCount})` : '✓ ALL CAUGHT UP'}
-             </button>
-          </div>
+          {pendingReviewsCount > 0 && (
+            <div style={{ paddingTop: '16px' }}>
+               <button 
+                 className="btn-spaced-review"
+                 onClick={startSpacedSolving}
+                 disabled={loading}
+               >
+                 <RefreshCw size={20} />
+                 Initiate Spaced Review Protocol ({pendingReviewsCount})
+               </button>
+            </div>
+          )}
         </motion.div>
       </div>
     </motion.div>
