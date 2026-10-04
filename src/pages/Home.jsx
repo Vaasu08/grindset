@@ -18,12 +18,12 @@ const NEETCODE_TOPICS = {
   "Tries": ["Trie"],
   "Heap / Priority Queue": ["Heap (Priority Queue)"],
   "Backtracking": ["Backtracking"],
-  "Graphs": ["Graph"],
-  "Advanced Graphs": ["Shortest Path", "Union Find", "Minimum Spanning Tree", "Biconnected Component", "Strongly Connected Component"],
+  "Graphs": ["Graph Theory"],
+  "Advanced Graphs": ["Shortest Path", "Union-Find", "Minimum Spanning Tree", "Biconnected Component", "Strongly Connected Component"],
   "1-D Dynamic Programming": ["Dynamic Programming", "Memoization"],
   "2-D Dynamic Programming": ["Dynamic Programming", "Memoization"],
   "Greedy": ["Greedy"],
-  "Intervals": ["Intervals", "Line Sweep"],
+  "Intervals": ["Sweep Line", "Array", "Sorting"],
   "Math & Geometry": ["Math", "Geometry", "Number Theory", "Game Theory"],
   "Bit Manipulation": ["Bit Manipulation"]
 };
@@ -90,24 +90,24 @@ const NEETCODE_SUBTOPICS = {
     "Constraint-based search": ["Backtracking"]
   },
   "Graphs": {
-    "DFS / BFS": ["Depth-First Search", "Breadth-First Search", "Graph"],
-    "Connected components": ["Depth-First Search", "Breadth-First Search", "Graph"],
-    "Grid graphs": ["Graph", "Matrix"],
+    "DFS / BFS": ["Depth-First Search", "Breadth-First Search", "Graph Theory"],
+    "Connected components": ["Depth-First Search", "Breadth-First Search", "Graph Theory"],
+    "Grid graphs": ["Graph Theory", "Matrix"],
     "Topological sort": ["Topological Sort"],
-    "Union Find / DSU": ["Union Find"],
+    "Union Find / DSU": ["Union-Find"],
     "Shortest paths": ["Shortest Path"],
     "Minimum Spanning Tree": ["Minimum Spanning Tree"],
     "Strongly Connected Components": ["Strongly Connected Component"],
-    "Advanced graph algorithms": ["Graph"]
+    "Advanced graph algorithms": ["Graph Theory"]
   },
   "Advanced Graphs": {
     "Dijkstra": ["Shortest Path"],
     "Bellman-Ford": ["Shortest Path"],
     "Floyd-Warshall": ["Shortest Path"],
     "Prim's / Kruskal's": ["Minimum Spanning Tree"],
-    "Union Find": ["Union Find"],
+    "Union Find": ["Union-Find"],
     "Tarjan's algorithm": ["Strongly Connected Component"],
-    "Network-flow-type concepts": ["Graph"]
+    "Network-flow-type concepts": ["Graph Theory"]
   },
   "1-D Dynamic Programming": {
     "Fibonacci-style DP": ["Dynamic Programming"],
@@ -132,7 +132,7 @@ const NEETCODE_SUBTOPICS = {
     "Merge intervals": ["Array", "Sorting"],
     "Overlapping intervals": ["Array", "Sorting"],
     "Meeting rooms": ["Array", "Sorting"],
-    "Sweep-line ideas": ["Line Sweep"]
+    "Sweep-line ideas": ["Sweep Line"]
   },
   "Math & Geometry": {
     "Number theory": ["Math", "Number Theory"],

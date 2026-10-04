@@ -336,6 +336,22 @@ const GrindSession = ({ session }) => {
     navigate('/summary', { state: { completedProblems, sessionLength } });
   };
 
+  if (!problemSlug) {
+    return (
+      <motion.div 
+        className="grind-container flex-col items-center justify-center gap-4"
+        initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}
+      >
+        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(234, 179, 8, 0.1)', color: 'var(--warning)' }}>
+          <AlertTriangle size={32} />
+        </div>
+        <h2 className="text-warning text-2xl font-bold">No problems found!</h2>
+        <p className="text-muted" style={{ fontSize: '1.1rem' }}>Could not find any matching problems for this topic.</p>
+        <button className="btn btn-primary mt-4" onClick={() => navigate('/')}>Go Back to Dashboard</button>
+      </motion.div>
+    );
+  }
+
   // Fix: Check !problem to prevent crashes when transitioning between problems
   if (loadingProblem || !problem) {
     return (
