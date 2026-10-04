@@ -18,7 +18,7 @@ const NEETCODE_TOPICS = {
   "Tries": ["Trie"],
   "Heap / Priority Queue": ["Heap (Priority Queue)"],
   "Backtracking": ["Backtracking"],
-  "Graphs": ["Graph", "Breadth-First Search", "Depth-First Search", "Topological Sort"],
+  "Graphs": ["Graph"],
   "Advanced Graphs": ["Shortest Path", "Union Find", "Minimum Spanning Tree", "Biconnected Component", "Strongly Connected Component"],
   "1-D Dynamic Programming": ["Dynamic Programming", "Memoization"],
   "2-D Dynamic Programming": ["Dynamic Programming", "Memoization"],
@@ -359,7 +359,11 @@ const Home = ({ session }) => {
     }
 
     if (targetTags && targetTags.length > 0) {
-      filtered = allProblems.filter(p => p.topic_tags?.some(tag => targetTags.includes(tag)));
+      if (selectionMode === 'subtopic' && !overrideTopic) {
+        filtered = allProblems.filter(p => targetTags.every(tag => p.topic_tags?.includes(tag)));
+      } else {
+        filtered = allProblems.filter(p => p.topic_tags?.some(tag => targetTags.includes(tag)));
+      }
     }
     
     filtered = filtered.filter(p => !p.paid_only);
@@ -378,7 +382,11 @@ const Home = ({ session }) => {
       .filter(p => !!p);
 
     if (targetTags && targetTags.length > 0) {
-      reviewQueue = reviewQueue.filter(p => p.topic_tags?.some(tag => targetTags.includes(tag)));
+      if (selectionMode === 'subtopic' && !overrideTopic) {
+        reviewQueue = reviewQueue.filter(p => targetTags.every(tag => p.topic_tags?.includes(tag)));
+      } else {
+        reviewQueue = reviewQueue.filter(p => p.topic_tags?.some(tag => targetTags.includes(tag)));
+      }
     }
 
     for (let i = reviewQueue.length - 1; i > 0; i--) {
